@@ -1,1 +1,1 @@
-# pareto
+# Pareto algorithm
