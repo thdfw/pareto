@@ -1,7 +1,0 @@
-{
-    "location": "testing",
-	"coordinates": [-73.2121, 44.4759],
-	"timezone": "US/Eastern",
-    "poll_interval": 60,
-    "output_file": "forecast.csv"
-}
