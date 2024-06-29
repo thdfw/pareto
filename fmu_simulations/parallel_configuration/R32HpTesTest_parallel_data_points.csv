@@ -1,0 +1,15 @@
+points,keys,factor,offset,units
+SysMode,SysMode,1,0,1
+HeatPumpWaterSupplyMassFlow,HeatPumpWaterSupplyMassFlow,1,0,kg/s
+HeatPumpOnOff,HeatPumpOnOff,1,0,1
+HeatPumpMode,HeatPumpMode,1,0,1
+HeatPumpWaterTempSetpoint,HeatPumpWaterTempSetpoint,1,0,deg-K
+OutdoorAirTemperature,OutdoorAirTemperature,1,0,deg-K
+PCMPumpWaterSupplyMassFlow,PCMPumpWaterSupplyMassFlow,1,0,kg/s
+ZoneHeatingLoad,ZoneHeatingLoad,1,0,W
+HpSupplyTemp,HpSupplyTemp,1,0,deg-K
+HpReturnTemp,HpReturnTemp,1,0,deg-K
+SOC,SOC,1,0,1
+TPCM,TPCM,1,0,deg-K
+SupplyTempToLoad,SupplyTempToLoad,1,0,deg-K
+ReturnTempFromLoad,ReturnTempFromLoad,1,0,deg-K

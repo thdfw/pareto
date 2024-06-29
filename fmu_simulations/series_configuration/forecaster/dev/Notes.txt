@@ -1,0 +1,17 @@
+forecasters.ipynb
+-Changed tune_hyperparameters(n_forecasters=1) to (n_forecasters=5)
+-Added detail to gradientboosting documentation
+-Added names to dictionaries for each forecaster
+-Returned GradientBoostingRegressor to functioning multi-output with tuneable hyperparameters
+-Added parameter so GradientBoostingRegressor can be either single or multi target
+-Returned tune_hyperparameters such that it executes in appropriate time
+-Returned towt, tody, sarimax to be multi-target capable
+-Added flags stating which forecasters require forecasts and which do not
+-Removed models dictionaries, updated code to only use lists
+forecaster_library_example.ipynb
+-Updated import path
+-Updated code to reference lists
+-Updated documentation to show new versions of forecasters
+TPOT_Forecaster_Search.ipynb
+-Created example showing use of TPOT
+-Left code pointing to code that (potentially) enables multi-target searches
