@@ -19,7 +19,6 @@ except ImportError:
 storage_capacity = 20   # kWh
 hp_capacity = 12        # kW
 m_HP = 0.29             # kg/s
-T_HP_in = 59            # Celcius
 PRINT = False
 
 # --------------------------
@@ -54,10 +53,10 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 56.35 + 0.154*soc
+    return 55.8 + 0.145*soc
 
 def get_T_sup_HP(Q, soc):
-    return (Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
+    return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
 
 # --------------------------
 # Simulate one hour
@@ -136,7 +135,7 @@ T_ret_list = []
 # Simulating 24 hours
 # --------------------------
 
-print('*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
+print('\n'+'*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
 
 for hour in range(24):
 
@@ -182,7 +181,7 @@ for hour in range(24):
     df['T_HP_ret'] = df['T_HP_ret'].round(1) - 273
     df['T_HP_sup'] = df['T_HP_sup'].round(1) - 273
     df['T_HP_sup_setpoint'] = [T_sup_HP for _ in range(60)]
-    df['Q_HP_expected'] = df['HeatPumpOnOff'] * 0.29 * 4187 * (df['T_HP_sup_setpoint'] - T_HP_in) / 1000
+    df['Q_HP_expected'] = [Q_HP[0]] * len(df)
     df['Q_HP_expected'] = df['Q_HP_expected'].round(2)
     if PRINT: print(df[['T_HP_sup_setpoint', 'T_HP_sup','T_HP_ret','Q_HP','Q_HP_expected']])
 
