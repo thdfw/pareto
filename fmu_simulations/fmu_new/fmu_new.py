@@ -92,7 +92,6 @@ def simulate(delta_HP, T_sup_HP, hour):
         model.set_fmu_state(state)
 
     # Simulate 1 hour
-    model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
     res = model.simulate(start_time=start_time, final_time=final_time, input=inputs, options=opts)
     if PRINT: print(f"\nThe simulation has finished running on the FMU.")
 
