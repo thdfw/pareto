@@ -201,28 +201,28 @@ for hour in range(24):
 c_el_list = df_yearly.elec[:24]
 c_el_list = [x for x in c_el_list for _ in range(60)]
 
-fig, ax = plt.subplots(1,1, figsize=(13,4))
-ax.step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="HP real")
-ax.step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="HP predicted")
-ax.step(range(24*60), load_list, where='post', color='red', alpha=0.6, label="Load")
-ax.plot([0] + SOC_list, color='orange', alpha=0.8, label="Storage")
-ax.plot([storage_capacity]*24*60, color='orange', alpha=0.8, label="Maximum storage", linestyle='dashed')
-ax2 = ax.twinx()
+fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
+ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="HP real")
+ax[0].step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="HP predicted")
+ax[0].step(range(24*60), load_list, where='post', color='red', alpha=0.6, label="Load")
+ax[1].plot([soc_0] + SOC_list, color='orange', alpha=0.8, label="Storage")
+ax[1].plot([storage_capacity]*24*60, color='orange', alpha=0.8, label="Maximum storage", linestyle='dashed')
+ax2 = ax[0].twinx()
 ax2.step(range(24*60), c_el_list, where='post', color='gray', alpha=0.4, label="Electricity price")
 
 # Hours in xticks
 hours = range(0, 24+1, 60)
 hour_labels = range(0, 24+1)
-ax.set_xticks(range(0, 24*60+1, 60))
-ax.set_xticklabels(hour_labels)
+ax[0].set_xticks(range(0, 24*60+1, 60))
+ax[0].set_xticklabels(hour_labels)
 
-ax.set_xlabel("Time [hours]")
-ax.set_ylabel("Energy [kWh]")
+ax[0].set_xlabel("Time [hours]")
+ax[0].set_ylabel("Energy [kWh]")
 ax2.set_ylabel("Electricity price [cts/kWh]")
 
-ax.set_ylim([0,25])
+ax[0].set_ylim([0,25])
 
-ax.legend(loc='upper left')
+ax[0].legend(loc='upper left')
 ax2.legend(loc='upper right')
 
 plt.show()
