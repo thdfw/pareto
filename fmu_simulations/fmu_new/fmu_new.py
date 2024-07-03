@@ -53,6 +53,7 @@ def get_COP(T):
     return round(res.params.Intercept + T*res.params.temp, 2)
 
 def get_T_HP_in(soc):
+    print(f'T_HP_in={56.35 + 0.154*soc}')
     return 56.35 + 0.154*soc
 
 def get_T_sup_HP(Q, soc):
