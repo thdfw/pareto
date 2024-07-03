@@ -20,7 +20,7 @@ storage_capacity = 20   # kWh
 hp_capacity = 12        # kW
 m_HP = 0.29             # kg/s
 T_HP_in = 59            # Celcius
-PRINT = True
+PRINT = False
 
 # --------------------------
 # Other
@@ -52,8 +52,11 @@ res = mod.fit()
 def get_COP(T):
     return round(res.params.Intercept + T*res.params.temp, 2)
 
-def get_T_sup_HP(Q):
-    return round(Q*1000/m_HP/4187 + T_HP_in, 2)
+def get_T_HP_in(soc):
+    return 56.35 + 0.154*soc
+
+def get_T_sup_HP(Q, soc):
+    return (Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
 
 # --------------------------
 # Simulate one hour
@@ -164,7 +167,7 @@ for hour in range(24):
 
     # Convert to temperature setpoint and delta
     delta_HP = 1 if Q_HP[0]>0 else 0
-    T_sup_HP = get_T_sup_HP(Q_HP[0]) if Q_HP[0]>0 else 0
+    T_sup_HP = get_T_sup_HP(Q_HP[0], soc) if Q_HP[0]>0 else 0
 
     # Send commands to FMU and obtain simulation results
     df = simulate(delta_HP, T_sup_HP, hour)
@@ -180,7 +183,7 @@ for hour in range(24):
     df['T_HP_sup_setpoint'] = [T_sup_HP for _ in range(60)]
     df['Q_HP_expected'] = df['HeatPumpOnOff'] * 0.29 * 4187 * (df['T_HP_sup_setpoint'] - T_HP_in) / 1000
     df['Q_HP_expected'] = df['Q_HP_expected'].round(2)
-    print(df[['T_HP_sup_setpoint', 'T_HP_sup','T_HP_ret','Q_HP','Q_HP_expected']])
+    if PRINT: print(df[['T_HP_sup_setpoint', 'T_HP_sup','T_HP_ret','Q_HP','Q_HP_expected']])
 
     Q_HP_list.extend(list(df['Q_HP']))
     Q_HP_expected_list.extend(list(df['Q_HP_expected']))
@@ -195,18 +198,16 @@ for hour in range(24):
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
     total_cost += cost
 
-    print(f'Hour {hour}, Q_HP {Q_HP[0]}, cost {round(cost,3)}, SoC {round(soc,2)}')
+    print('*'*30+f'\nHour {hour}, Q_HP {Q_HP[0]}, cost {round(cost,3)}, SoC {round(soc,2)}\n'+'*'*30)
 
 # --------------------------
 # Plot
 # --------------------------
 
 print('\n\nHello\n\n')
-print(T_ret_list)
-print(SOC_list)
-print('\n\nHello\n\n')
 
 T_ret_df = pd.DataFrame({'soc':SOC_list,'t_ret':T_ret_list})
+T_ret_df = T_ret_df[60:]
 print(T_ret_df)
 mod = smf.ols(formula='t_ret ~ soc', data=T_ret_df)
 np.random.seed(2) 
@@ -248,6 +249,7 @@ ax2.set_ylabel("Price [cts/kWh]")
 ax[0].set_ylim([0,hp_capacity+10])
 
 ax[0].legend(loc='upper left')
+ax[1].legend(loc='upper left')
 ax2.legend(loc='upper right')
 
 plt.show()
