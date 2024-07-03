@@ -22,6 +22,34 @@ m_HP = 0.29 # kg/s
 PRINT = False
 
 # --------------------------
+# Initialize
+# --------------------------
+
+# Control sequence
+final_Q_HP_sequence = []
+
+# State of charge (kWh)
+soc_0 = 0
+soc = soc_0
+
+# Initialize cost of operating the system
+total_cost = 0
+
+# Load FMU
+fmuName = 'R32SimpleHpTesDummyZone.fmu'
+fmuNameNoSuffix = fmuName.replace(".fmu","")
+model = pyfmi.load_fmu(fmuName)
+model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
+if PRINT: print(f"Model {fmuName} was loaded.\n")
+
+# Lists for final plot and analysis
+Q_HP_list = []
+Q_HP_expected_list = []
+load_list = []
+SOC_list = []
+T_ret_list = []
+
+# --------------------------
 # Other
 # --------------------------
 
@@ -105,34 +133,6 @@ def simulate(delta_HP, T_sup_HP, hour):
     return df
 
 # --------------------------
-# Initialize
-# --------------------------
-
-# Control sequence
-final_Q_HP_sequence = []
-
-# State of charge (kWh)
-soc_0 = 0
-soc = soc_0
-
-# Initialize cost of operating the system
-total_cost = 0
-
-# Load FMU
-fmuName = 'R32SimpleHpTesDummyZone20kWh.fmu'
-fmuNameNoSuffix = fmuName.replace(".fmu","")
-model = pyfmi.load_fmu(fmuName)
-model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
-if PRINT: print(f"Model {fmuName} was loaded.\n")
-
-# Lists for final plot and analysis
-Q_HP_list = []
-Q_HP_expected_list = []
-load_list = []
-SOC_list = []
-T_ret_list = []
-
-# --------------------------
 # Simulating 24 hours
 # --------------------------
 
@@ -195,7 +195,7 @@ for hour in range(24):
     # Update SoC
     soc = df['SOC'].iloc[-1]
     if soc>storage_capacity:
-        print(f'\n\n\nHEEEEEEY\n\n\n\{soc}>{storage_capacity}\n\n')
+        print(f'\n\n\nSOC PROBLEM\n\n\n\{soc}>{storage_capacity}\n\n')
         soc = storage_capacity
 
     # Cost of the last hour

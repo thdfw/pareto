@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from functions import generic
 from functions import iteration_plot
+from functions import baseline
 import statsmodels.formula.api as smf
 import numpy as np
 import time
@@ -162,7 +163,7 @@ for hour in range(24):
     }
 
     # Get the controls from the generic algorithm
-    Q_HP = generic(parameters)
+    Q_HP = baseline(hour, parameters)
     final_Q_HP_sequence.append(Q_HP[0])
 
     # Convert to temperature setpoint and delta
