@@ -121,7 +121,7 @@ total_cost = 0
 fmuName = 'R32SimpleHpTesDummyZone20kWh.fmu'
 fmuNameNoSuffix = fmuName.replace(".fmu","")
 model = pyfmi.load_fmu(fmuName)
-model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
+model.set('phaseChangeBattery58.Design.Tes_nominal', (storage_capacity-1)*3600000)
 if PRINT: print(f"Model {fmuName} was loaded.\n")
 
 # Lists for final plot and analysis
@@ -193,30 +193,15 @@ for hour in range(24):
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
-    soc = storage_capacity if soc>storage_capacity else soc
+    if soc>storage_capacity:
+        print(f'\n\n\nHEEEEEEY\n\n\n\{soc}.{storage_capacity}\n\n')
+        soc = storage_capacity
 
     # Cost of the last hour
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
     total_cost += cost
 
     print('*'*30+f'\nHour {hour}, Q_HP {Q_HP[0]}, cost {round(cost,3)}, SoC {round(soc,2)}\n'+'*'*30)
-
-# --------------------------
-# Plot
-# --------------------------
-
-print('\n\nHello\n\n')
-
-T_ret_df = pd.DataFrame({'soc':SOC_list,'t_ret':T_ret_list})
-T_ret_df = T_ret_df[60:]
-print(T_ret_df)
-mod = smf.ols(formula='t_ret ~ soc', data=T_ret_df)
-np.random.seed(2) 
-res = mod.fit()
-print('done')
-print(res.params.Intercept)
-print(res.params.soc)
-print('done')
 
 # --------------------------
 # Plot
