@@ -16,8 +16,8 @@ except ImportError:
 # Parameters
 # --------------------------
 
-storage_capacity = 10.3 # kWh
-hp_capacity = 10        # kW
+storage_capacity = 20   # kWh
+hp_capacity = 12        # kW
 m_HP = 0.29             # kg/s
 T_HP_in = 57            # Celcius
 PRINT = True
@@ -145,8 +145,6 @@ for hour in range(24):
         'hardware': {'heatpump': True,
                      'COP': [get_COP(x) for x in df_yearly.T_OA[hour:hour+24]]}
     }
-
-    print(parameters)
 
     # Get the controls from the generic algorithm
     Q_HP = generic(parameters)
