@@ -122,7 +122,7 @@ total_cost = 0
 fmuName = 'R32SimpleHpTesDummyZone20kWh.fmu'
 fmuNameNoSuffix = fmuName.replace(".fmu","")
 model = pyfmi.load_fmu(fmuName)
-model.set('phaseChangeBattery58.Design.Tes_nominal', (storage_capacity-4)*3600000)
+model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
 if PRINT: print(f"Model {fmuName} was loaded.\n")
 
 # Lists for final plot and analysis
