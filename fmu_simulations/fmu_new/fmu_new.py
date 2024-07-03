@@ -1,11 +1,11 @@
 import pandas as pd
 import os
 from functions import generic
-from functions import get_storage
 from functions import iteration_plot
 import statsmodels.formula.api as smf
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 import subprocess
 try:
     import pyfmi
@@ -177,7 +177,7 @@ for hour in range(24):
 
     Q_HP_list.extend(list(df['Q_HP']))
     Q_HP_expected_list.extend(list(df['Q_HP_expected']))
-    load_list.extend(df_yearly.load[hour])
+    load_list.extend([df_yearly.load[hour] for _ in range(60)])
     SOC_list.extend(list(df['SOC']))
 
     # Update SoC
