@@ -53,7 +53,7 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 55.8 + (0.35*soc if soc/storage_capacity<0.5 else 0.6*soc)
+    return 55.8 + (0.30*soc if soc/storage_capacity<0.5 else 0.6*soc)
 
 def get_T_sup_HP(Q, soc):
     return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
@@ -161,7 +161,7 @@ for hour in range(24):
                      'COP': [get_COP(x) for x in df_yearly.T_OA[hour:hour+24]]}
     }
 
-    # Get the controls from the generic algorithm
+    # Get the controls from the baseline algorithm
     Q_HP = generic(parameters)
     final_Q_HP_sequence.append(Q_HP[0])
 
@@ -193,6 +193,7 @@ for hour in range(24):
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
+    soc = storage_capacity if soc>storage_capacity else soc
 
     # Cost of the last hour
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
