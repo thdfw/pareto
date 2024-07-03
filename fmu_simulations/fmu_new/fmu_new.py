@@ -120,6 +120,11 @@ if PRINT: print(f"Model {fmuName} was loaded.\n")
 # Simulating 24 hours
 # --------------------------
 
+Q_HP_list = []
+Q_HP_expected_list = []
+load_list = []
+SOC_list = []
+
 print('*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
 
 for hour in range(24):
@@ -158,22 +163,22 @@ for hour in range(24):
     df = simulate(delta_HP, T_sup_HP, hour)
     df = df.drop(df.index[-1])
 
-    # Convert SOC to kWh
     df['SOC'] = df['SOC'] * storage_capacity
     df['SOC'] = df['SOC'].round(2)
-    # Compute real Q_HP
+    df['HeatPumpOnOff'] = df['HeatPumpOnOff'].round()
     df['Q_HP'] = df['HeatPumpOnOff'] * 0.29 * 4187 * (df['T_HP_sup'] - df['T_HP_ret']) / 1000
     df['Q_HP'] = df['Q_HP'].round(2)
-    df['HeatPumpOnOff'] = df['HeatPumpOnOff'].round()
-    df['T_HP_ret'] = df['T_HP_ret'].round(1)
-    df['T_HP_sup'] = df['T_HP_sup'].round(1)
-    # Add inputs to df
-    df['INPUT_delta_HP'] = [delta_HP for _ in range(60)]
-    df['INPUT_T_HP_sup_setpoint'] = [T_sup_HP+273 for _ in range(60)]
-    # Compute expected Q_HP
-    df['Q_HP_expected'] = df['INPUT_delta_HP'] * 0.29 * 4187 * (df['INPUT_T_HP_sup_setpoint'] - T_HP_in - 273) / 1000
+    df['T_HP_ret'] = df['T_HP_ret'].round(1) - 273
+    df['T_HP_sup'] = df['T_HP_sup'].round(1) - 273
+    df['T_HP_sup_setpoint'] = [T_sup_HP for _ in range(60)]
+    df['Q_HP_expected'] = df['HeatPumpOnOff'] * 0.29 * 4187 * (df['T_HP_sup_setpoint'] - T_HP_in) / 1000
     df['Q_HP_expected'] = df['Q_HP_expected'].round(2)
-    print(df)
+    print(df[['T_HP_sup_setpoint', 'T_HP_sup','T_HP_ret','Q_HP','Q_HP_expected']])
+
+    Q_HP_list.extend(list(df['Q_HP']))
+    Q_HP_expected_list.extend(list(df['Q_HP_expected']))
+    load_list.extend(df_yearly.load[hour])
+    SOC_list.extend(list(df['SOC']))
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
@@ -190,3 +195,35 @@ parameters['load']['value'] = list(df_yearly.load[:24])
 parameters['constraints']['initial_soc'] = soc_0
 print(f"\nThe control sequence is:\n{final_Q_HP_sequence} kWh\n")
 iteration_plot({'control': final_Q_HP_sequence}, parameters)
+
+
+
+c_el_list = df.elec[:24]
+c_el_list = [x for x in c_el_list for _ in range(60)]
+
+# Plot
+fig, ax = plt.subplots(1,1, figsize=(13,4))
+ax.step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="HP real")
+ax.step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="HP predicted")
+ax.step(range(24*60), load_list, where='post', color='red', alpha=0.6, label="Load")
+ax.plot([0] + SOC_list, color='orange', alpha=0.8, label="Storage")
+ax.plot([storage_capacity]*24*60, color='orange', alpha=0.8, label="Maximum storage", linestyle='dashed')
+ax2 = ax.twinx()
+ax2.step(range(24*60), c_el_list, where='post', color='gray', alpha=0.4, label="Electricity price")
+
+# Hours in xticks
+hours = range(0, 24+1, 60)
+hour_labels = range(0, 24+1)
+ax.set_xticks(range(0, 24*60+1, 60))
+ax.set_xticklabels(hour_labels)
+
+ax.set_xlabel("Time [hours]")
+ax.set_ylabel("Energy [kWh]")
+ax2.set_ylabel("Electricity price [cts/kWh]")
+
+ax.set_ylim([0,25])
+
+ax.legend(loc='upper left')
+ax2.legend(loc='upper right')
+
+plt.show()
