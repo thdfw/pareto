@@ -19,7 +19,7 @@ except ImportError:
 storage_capacity = 20   # kWh
 hp_capacity = 12        # kW
 m_HP = 0.29             # kg/s
-T_HP_in = 57            # Celcius
+T_HP_in = 59            # Celcius
 PRINT = True
 
 # --------------------------
@@ -35,6 +35,11 @@ df_yearly['load'] = df_yearly['House Power Required AvgKw'] * 0.8
 df_yearly['T_OA'] = df_yearly['Outside Temp F']
 df_yearly['T_OA'] = df_yearly['T_OA'].apply(lambda x: round(5/9 * (x-32),2))
 df_yearly = df_yearly[['elec', 'load', 'T_OA']]
+
+# Use CalFlexHub prices
+df_yearly['elec'] = [0.1714, 0.144, 0.1385, 0.1518, 0.1829, 0.2713, 0.4659, 0.5328, 0.28, 0.1158, 
+                     0.0398, 0.0196, 0.011, 0.0188, 0.0255, 0.0632, 0.0957, 0.2358, 0.4931, 0.6618, 
+                     0.5364, 0.4116, 0.2905, 0.2209]*365
 
 # Get COP regression as a function of T_OA
 T_OA_table = list(range(-15,40,5))
@@ -189,19 +194,13 @@ for hour in range(24):
 
     print(f'Hour {hour}, Q_HP {Q_HP[0]}, cost {round(cost,3)}, SoC {round(soc,2)}')
 
-# Plot the whole operation
-parameters['elec_costs'] = list(df_yearly.elec[:24])
-parameters['load']['value'] = list(df_yearly.load[:24])
-parameters['constraints']['initial_soc'] = soc_0
-print(f"\nThe control sequence is:\n{final_Q_HP_sequence} kWh\n")
-iteration_plot({'control': final_Q_HP_sequence}, parameters)
+# --------------------------
+# Plot
+# --------------------------
 
-
-
-c_el_list = df.elec[:24]
+c_el_list = df_yearly.elec[:24]
 c_el_list = [x for x in c_el_list for _ in range(60)]
 
-# Plot
 fig, ax = plt.subplots(1,1, figsize=(13,4))
 ax.step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="HP real")
 ax.step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="HP predicted")
