@@ -16,9 +16,9 @@ except ImportError:
 # Parameters
 # --------------------------
 
-storage_capacity = 20   # kWh
-hp_capacity = 12        # kW
-m_HP = 0.29             # kg/s
+storage_capacity = 10.3 # kWh
+hp_capacity = 10.35 # kW
+m_HP = 0.29 # kg/s
 PRINT = False
 
 # --------------------------
@@ -53,7 +53,7 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 55.8 + 0.145*soc
+    return 55.8 + 0.15*soc
 
 def get_T_sup_HP(Q, soc):
     return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
@@ -135,7 +135,7 @@ T_ret_list = []
 # Simulating 24 hours
 # --------------------------
 
-print('\n'+'*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
+print('*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
 
 for hour in range(24):
 
