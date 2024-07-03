@@ -121,14 +121,16 @@ model = pyfmi.load_fmu(fmuName)
 model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
 if PRINT: print(f"Model {fmuName} was loaded.\n")
 
-# --------------------------
-# Simulating 24 hours
-# --------------------------
-
+# Lists for final plot and analysis
 Q_HP_list = []
 Q_HP_expected_list = []
 load_list = []
 SOC_list = []
+T_ret_list = []
+
+# --------------------------
+# Simulating 24 hours
+# --------------------------
 
 print('*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
 
@@ -184,6 +186,7 @@ for hour in range(24):
     Q_HP_expected_list.extend(list(df['Q_HP_expected']))
     load_list.extend([df_yearly.load[hour] for _ in range(60)])
     SOC_list.extend(list(df['SOC']))
+    T_ret_list.extend(df.T_HP_ret)
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
@@ -193,6 +196,25 @@ for hour in range(24):
     total_cost += cost
 
     print(f'Hour {hour}, Q_HP {Q_HP[0]}, cost {round(cost,3)}, SoC {round(soc,2)}')
+
+# --------------------------
+# Plot
+# --------------------------
+
+print('\n\nHello\n\n')
+print(T_ret_list)
+print(SOC_list)
+print('\n\nHello\n\n')
+
+T_ret_df = pd.DataFrame({'soc':SOC_list,'t_ret':T_ret_list})
+print(T_ret_df)
+mod = smf.ols(formula='t_ret ~ soc', data=T_ret_df)
+np.random.seed(2) 
+res = mod.fit()
+print('done')
+print(res.params.Intercept)
+print(res.params.soc)
+print('done')
 
 # --------------------------
 # Plot
@@ -223,7 +245,7 @@ ax[0].set_ylabel("Power [kW]")
 ax[1].set_ylabel("State of charge [%]")
 ax2.set_ylabel("Price [cts/kWh]")
 
-ax[0].set_ylim([0,25])
+ax[0].set_ylim([0,hp_capacity+10])
 
 ax[0].legend(loc='upper left')
 ax2.legend(loc='upper right')
