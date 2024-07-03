@@ -88,6 +88,7 @@ def simulate(delta_HP, T_sup_HP, hour):
     if hour>0:
         state = model.get_fmu_state()
         opts['initialize'] = False
+        print(state)
         model.set_fmu_state(state)
 
     # Simulate 1 hour
@@ -121,7 +122,7 @@ total_cost = 0
 fmuName = 'R32SimpleHpTesDummyZone20kWh.fmu'
 fmuNameNoSuffix = fmuName.replace(".fmu","")
 model = pyfmi.load_fmu(fmuName)
-model.set('phaseChangeBattery58.Design.Tes_nominal', (storage_capacity-1)*3600000)
+model.set('phaseChangeBattery58.Design.Tes_nominal', (storage_capacity-4)*3600000)
 if PRINT: print(f"Model {fmuName} was loaded.\n")
 
 # Lists for final plot and analysis
@@ -194,7 +195,7 @@ for hour in range(24):
     # Update SoC
     soc = df['SOC'].iloc[-1]
     if soc>storage_capacity:
-        print(f'\n\n\nHEEEEEEY\n\n\n\{soc}.{storage_capacity}\n\n')
+        print(f'\n\n\nHEEEEEEY\n\n\n\{soc}>{storage_capacity}\n\n')
         soc = storage_capacity
 
     # Cost of the last hour
@@ -212,7 +213,8 @@ c_el_list = [x for x in c_el_list for _ in range(60)]
 
 SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
-SOC_list_percent = [x if x<100 else 100 for x in SOC_list]
+SOC_list_percent = [x if x<100 else 100 for x in SOC_list_percent]
+SOC_list_percent = [0 if x<0 else x for x in SOC_list_percent]
 
 fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
 ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="Heat pump")
