@@ -53,7 +53,7 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 55.8 + (0.35*soc if soc/storage_capacity<0.5 else 0.6*soc)
+    return 55.8 + (0.3*soc if soc/storage_capacity<0.5 else 0.6*soc)
 
 def get_T_sup_HP(Q, soc):
     return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
@@ -193,6 +193,7 @@ for hour in range(24):
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
+    soc = storage_capacity if soc>storage_capacity else soc
 
     # Cost of the last hour
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
@@ -226,6 +227,7 @@ c_el_list = [x for x in c_el_list for _ in range(60)]
 
 SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
+SOC_list_percent = [x if x<100 else 100 for x in SOC_list]
 
 fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
 ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="Heat pump")
