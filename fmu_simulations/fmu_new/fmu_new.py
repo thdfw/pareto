@@ -16,38 +16,10 @@ except ImportError:
 # Parameters
 # --------------------------
 
-storage_capacity = 20 #10.3 # kWh
-hp_capacity = 12 #10.35 # kW
-m_HP = 0.29 # kg/s
+storage_capacity = 20   # kWh
+hp_capacity = 12        # kW
+m_HP = 0.29             # kg/s
 PRINT = False
-
-# --------------------------
-# Initialize
-# --------------------------
-
-# Control sequence
-final_Q_HP_sequence = []
-
-# State of charge (kWh)
-soc_0 = 0
-soc = soc_0
-
-# Initialize cost of operating the system
-total_cost = 0
-
-# Load FMU
-fmuName = 'R32SimpleHpTesDummyZone20kWh.fmu'
-fmuNameNoSuffix = fmuName.replace(".fmu","")
-model = pyfmi.load_fmu(fmuName)
-model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
-if PRINT: print(f"Model {fmuName} was loaded.\n")
-
-# Lists for final plot and analysis
-Q_HP_list = []
-Q_HP_expected_list = []
-load_list = []
-SOC_list = []
-T_ret_list = []
 
 # --------------------------
 # Other
@@ -81,7 +53,7 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 55.8 + (0.3*soc if soc/storage_capacity<0.5 else 0.6*soc)
+    return 55.8 + 0.25*soc
 
 def get_T_sup_HP(Q, soc):
     return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
@@ -116,7 +88,6 @@ def simulate(delta_HP, T_sup_HP, hour):
     if hour>0:
         state = model.get_fmu_state()
         opts['initialize'] = False
-        print(state)
         model.set_fmu_state(state)
 
     # Simulate 1 hour
@@ -133,10 +104,38 @@ def simulate(delta_HP, T_sup_HP, hour):
     return df
 
 # --------------------------
+# Initialize
+# --------------------------
+
+# Control sequence
+final_Q_HP_sequence = []
+
+# State of charge (kWh)
+soc_0 = 0
+soc = soc_0
+
+# Initialize cost of operating the system
+total_cost = 0
+
+# Load FMU
+fmuName = 'R32SimpleHpTesDummyZone20kWh.fmu'
+fmuNameNoSuffix = fmuName.replace(".fmu","")
+model = pyfmi.load_fmu(fmuName)
+model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
+if PRINT: print(f"Model {fmuName} was loaded.\n")
+
+# Lists for final plot and analysis
+Q_HP_list = []
+Q_HP_expected_list = []
+load_list = []
+SOC_list = []
+T_ret_list = []
+
+# --------------------------
 # Simulating 24 hours
 # --------------------------
 
-print('*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
+print('\n'+'*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
 
 for hour in range(24):
 
@@ -194,9 +193,6 @@ for hour in range(24):
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
-    if soc>storage_capacity:
-        print(f'\n\n\nSOC PROBLEM\n\n\n\{soc}>{storage_capacity}\n\n')
-        #soc = storage_capacity
 
     # Cost of the last hour
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
@@ -208,19 +204,37 @@ for hour in range(24):
 # Plot
 # --------------------------
 
+print('\n\nHello\n\n')
+
+T_ret_df = pd.DataFrame({'soc':SOC_list,'t_ret':T_ret_list})
+T_ret_df = T_ret_df[60:]
+print(T_ret_df)
+mod = smf.ols(formula='t_ret ~ soc', data=T_ret_df)
+np.random.seed(2) 
+res = mod.fit()
+print('done')
+print(res.params.Intercept)
+print(res.params.soc)
+print('done')
+
+# --------------------------
+# Plot
+# --------------------------
+
 c_el_list = df_yearly.elec[:24]
 c_el_list = [x for x in c_el_list for _ in range(60)]
 
 SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
-#SOC_list_percent = [x if x<100 else 100 for x in SOC_list_percent]
 SOC_list_percent = [0 if x<0 else x for x in SOC_list_percent]
+SOC_list_percent = [100 if x>100 else x for x in SOC_list_percent]
 
 fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
 ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="Heat pump")
-ax[0].step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="Objective")
+#ax[0].step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="Objective")
 ax[0].step(range(24*60), load_list, where='post', color='red', alpha=0.6, label="Load")
 ax[1].plot(SOC_list_percent, color='orange', alpha=0.8, label="Storage")
+#ax[1].plot([storage_capacity]*24*60, color='orange', alpha=0.8, label="Maximum storage", linestyle='dashed')
 ax2 = ax[0].twinx()
 ax2.step(range(24*60), c_el_list, where='post', color='gray', alpha=0.4, label="Electricity price")
 
