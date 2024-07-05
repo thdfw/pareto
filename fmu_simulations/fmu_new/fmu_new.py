@@ -16,8 +16,8 @@ except ImportError:
 # Parameters
 # --------------------------
 
-storage_capacity = 10.3 # kWh
-hp_capacity = 10.35 # kW
+storage_capacity = 20 #10.3 # kWh
+hp_capacity = 12 #10.35 # kW
 m_HP = 0.29 # kg/s
 PRINT = False
 
@@ -36,7 +36,7 @@ soc = soc_0
 total_cost = 0
 
 # Load FMU
-fmuName = 'R32SimpleHpTesDummyZone.fmu'
+fmuName = 'R32SimpleHpTesDummyZone20kWh.fmu'
 fmuNameNoSuffix = fmuName.replace(".fmu","")
 model = pyfmi.load_fmu(fmuName)
 model.set('phaseChangeBattery58.Design.Tes_nominal', storage_capacity*3600000)
@@ -196,7 +196,7 @@ for hour in range(24):
     soc = df['SOC'].iloc[-1]
     if soc>storage_capacity:
         print(f'\n\n\nSOC PROBLEM\n\n\n\{soc}>{storage_capacity}\n\n')
-        soc = storage_capacity
+        #soc = storage_capacity
 
     # Cost of the last hour
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
@@ -213,7 +213,7 @@ c_el_list = [x for x in c_el_list for _ in range(60)]
 
 SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
-SOC_list_percent = [x if x<100 else 100 for x in SOC_list_percent]
+#SOC_list_percent = [x if x<100 else 100 for x in SOC_list_percent]
 SOC_list_percent = [0 if x<0 else x for x in SOC_list_percent]
 
 fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
@@ -221,7 +221,6 @@ ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label
 ax[0].step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="Objective")
 ax[0].step(range(24*60), load_list, where='post', color='red', alpha=0.6, label="Load")
 ax[1].plot(SOC_list_percent, color='orange', alpha=0.8, label="Storage")
-#ax[1].plot([storage_capacity]*24*60, color='orange', alpha=0.8, label="Maximum storage", linestyle='dashed')
 ax2 = ax[0].twinx()
 ax2.step(range(24*60), c_el_list, where='post', color='gray', alpha=0.4, label="Electricity price")
 
