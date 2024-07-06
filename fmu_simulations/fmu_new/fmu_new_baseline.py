@@ -1,8 +1,7 @@
 import pandas as pd
 import os
-from functions import generic
-from functions import iteration_plot
 from functions import baseline
+from functions import iteration_plot
 import statsmodels.formula.api as smf
 import numpy as np
 import time
@@ -17,9 +16,9 @@ except ImportError:
 # Parameters
 # --------------------------
 
-storage_capacity = 10.3 # kWh
-hp_capacity = 10.35 # kW
-m_HP = 0.29 # kg/s
+storage_capacity = 20   # kWh
+hp_capacity = 12        # kW
+m_HP = 0.29             # kg/s
 PRINT = False
 
 # --------------------------
@@ -54,7 +53,7 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 55.8 + (0.35*soc if soc/storage_capacity<0.5 else 0.6*soc)
+    return 55.8 + 0.25*soc
 
 def get_T_sup_HP(Q, soc):
     return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
@@ -136,7 +135,7 @@ T_ret_list = []
 # Simulating 24 hours
 # --------------------------
 
-print('*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
+print('\n'+'*'*30+'\nFMU closed loop simulation\n'+'*'*30+'\n')
 
 for hour in range(24):
 
@@ -163,7 +162,7 @@ for hour in range(24):
     }
 
     # Get the controls from the generic algorithm
-    Q_HP = baseline(hour, parameters)
+    Q_HP = baseline(parameters)
     final_Q_HP_sequence.append(Q_HP[0])
 
     # Convert to temperature setpoint and delta
@@ -227,10 +226,12 @@ c_el_list = [x for x in c_el_list for _ in range(60)]
 
 SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
+SOC_list_percent = [0 if x<0 else x for x in SOC_list_percent]
+SOC_list_percent = [100 if x>100 else x for x in SOC_list_percent]
 
 fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
 ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="Heat pump")
-ax[0].step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="Objective")
+#ax[0].step(range(24*60), Q_HP_expected_list, where='post', color='blue', alpha=0.6, linestyle='dotted', label="Objective")
 ax[0].step(range(24*60), load_list, where='post', color='red', alpha=0.6, label="Load")
 ax[1].plot(SOC_list_percent, color='orange', alpha=0.8, label="Storage")
 #ax[1].plot([storage_capacity]*24*60, color='orange', alpha=0.8, label="Maximum storage", linestyle='dashed')
