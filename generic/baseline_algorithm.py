@@ -4,6 +4,9 @@ from functions import iteration_plot
 import numpy as np
 import statsmodels.formula.api as smf
 
+hp_capacity = 10.35
+tes_capacity = 10.3
+
 # -----------------------------------------
 # Baseline algorithm
 # -----------------------------------------
@@ -25,7 +28,7 @@ def baseline(parameters):
         peak_hours.remove(6)
         needed_storage_morning = round(load[6])
     if needed_storage_evening > storage_capacity:
-        peak_hours.remove(19)
+        peak_hours.remove(20)
         needed_storage_evening = round(load[19])
 
     for time in range(len(load)):
@@ -91,7 +94,7 @@ CFH_prices = [0.1714, 0.144, 0.1385, 0.1518, 0.1829, 0.2713, 0.4659, 0.5328, 0.2
 total_cost = 0
 total_heat = 0
 total_elec = 0
-num_days = 3
+num_days = 120
 
 print(f'\n--- Simulating {num_days} days ---\n')
 for day in range(num_days):
@@ -106,11 +109,11 @@ for day in range(num_days):
                 'value': list(df.load[day*24:24+day*24])},
 
         'control': {'type': 'range',
-                    'max': [12]*24, #kW
-                    'min': [6]*24}, #kW
+                    'max': [hp_capacity]*24, #kW
+                    'min': [hp_capacity*0.2]*24}, #kW
         
         'constraints': {'storage_capacity': True,
-                        'max_storage': 10,
+                        'max_storage': tes_capacity,
                         'initial_soc': 0,
                         'cheaper_hours': True,
                         'quiet_hours': False
@@ -131,8 +134,8 @@ for day in range(num_days):
     total_heat += heat
     total_elec += elec
 
-print(f'\nThe totals:')
-print(f'- Cost {round(total_cost,3)} $')
-print(f'- Heat {round(total_heat,3)} kWh')
-print(f'- Elec {round(total_elec,3)} kWh')
+print(f'\nThe averages:')
+print(f'- Cost {round(total_cost/num_days,3)} $')
+print(f'- Heat {round(total_heat/num_days,3)} kWh')
+print(f'- Elec {round(total_elec/num_days,3)} kWh')
 print('')
