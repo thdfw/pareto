@@ -45,10 +45,14 @@ def baseline(parameters):
             controls.append(load[hour])
 
     cost = 0
+    heat = 0
+    elec = 0
     for hour in range(parameters['horizon']):
         cost += controls[hour] * parameters['elec_costs'][hour] / parameters['hardware']['COP'][hour]
+        heat += controls[hour]
+        elec += controls[hour] / parameters['hardware']['COP'][hour]
 
-    return controls, cost
+    return controls, cost, heat, elec
 
 # -----------------------------------------
 # COP(T_OA) regression
@@ -67,7 +71,7 @@ def COP(T_OA):
 # Temperature, load and electricity data
 # -----------------------------------------
 
-df = pd.read_excel(os.getcwd()+'/data/gridworks_yearly_data.xlsx', header=3, index_col = 0)
+df = pd.read_excel(os.getcwd()+'/generic/data/gridworks_yearly_data.xlsx', header=3, index_col = 0)
 df.index = pd.to_datetime(df.index)
 df.index.name = None
 df['elec'] = df['Total Delivered Energy Cost ($/MWh)']
@@ -85,6 +89,8 @@ CFH_prices = [0.1714, 0.144, 0.1385, 0.1518, 0.1829, 0.2713, 0.4659, 0.5328, 0.2
 # -----------------------------------------
 
 total_cost = 0
+total_heat = 0
+total_elec = 0
 num_days = 3
 
 print(f'\n--- Simulating {num_days} days ---\n')
@@ -115,13 +121,18 @@ for day in range(num_days):
     }
 
     # Obtain the control sequence from Pareto
-    control, cost = baseline(parameters)
+    control, cost, heat, elec = baseline(parameters)
     print(f"The cost of this sequence is: {round(cost,2)} $")
 
     # Plot the whole operation
     iteration_plot({'control': control}, parameters)
 
     total_cost += cost
+    total_heat += heat
+    total_elec += elec
 
-print(f'\nThe total cost is {round(total_cost,3)} $\n')
-
+print(f'\nThe totals:')
+print(f'- Cost {round(total_cost,3)} $')
+print(f'- Heat {round(total_heat,3)} kWh')
+print(f'- Elec {round(total_elec,3)} kWh')
+print('')

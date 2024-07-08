@@ -348,36 +348,63 @@ def iteration_plot(operation, parameters):
 
     # Extract
     N = parameters['horizon']
-    control = operation['control']
-    costs_pu = parameters['elec_costs']
+    storage_capacity = parameters['constraints']['max_storage']
+    control = operation['control']+ [operation['control'][-1]]
+    costs_pu = parameters['elec_costs'] + [parameters['elec_costs'][-1]]
+    loads_plot = parameters['load']['value'] + [parameters['load']['value'][-1]]
+    storage_plot = [x/storage_capacity*100 for x in get_storage(control, parameters)]
 
-    fig, ax = plt.subplots(1,1, figsize=(13,4))
-    ax2 = ax.twinx()
-
-    # Plot the controls and prices
-    controls_plot = control + [control[-1]]
-    ax.step(range(N+1), controls_plot, where='post', color='blue', alpha=0.5, label='Heat pump')
-    costs_plot = costs_pu + [costs_pu[-1]]
-    ax2.step(range(N+1), costs_plot, where='post', color='gray', alpha=0.6, label='Electricity price')
-
-    # Plot hourly loads
-    if parameters['load']['type']=='hourly':
-        loads_plot = parameters['load']['value'] + [parameters['load']['value'][-1]]
-        ax.step(range(N+1), loads_plot, where='post', color='red', alpha=0.4, label='Load')
-
-    # Plot the storage levels
     if parameters['constraints']['storage_capacity']:
-        ax.plot(range(N+1), get_storage(control, parameters), alpha=0.6, color='orange', label='Storage')
-        ax.plot(range(N+1), [parameters['constraints']['max_storage']]*(N+1), alpha=0.5, linestyle='dotted', color='orange', label='Maximum storage')
 
-    ax.set_xlabel("Time [hours]")
-    ax.set_ylabel("Energy [kWh]")
-    ax2.set_ylabel("Cost [cts/kWh]")
+        fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
+        ax[0].step(range(N+1), control, where='post', color='blue', alpha=0.6, label="Heat pump")
+        ax[0].step(range(N+1), loads_plot, where='post', color='red', alpha=0.6, label="Load")
+        ax[1].plot(range(N+1), storage_plot, alpha=0.8, color='orange', label='Storage')
+        ax2 = ax[0].twinx()
+        ax2.step(range(N+1), costs_pu, where='post', color='gray', alpha=0.4, label="Electricity price")
 
-    ax.set_xticks(range(N+1))
-    
-    ax.legend(loc='upper left')
-    ax2.legend(loc='upper right')
+        ax[0].set_xticks(range(N+1))
+        ax[0].set_xticklabels(range(N+1))
+        ax[1].set_xlabel("Time [hours]")
+        ax[0].set_ylabel("Power [kW]")
+        ax[1].set_ylabel("State of charge [%]")
+        ax2.set_ylabel("Price [cts/kWh]")
+
+        ax[0].set_ylim([0, max(parameters['control']['max'])+1])
+        ax[1].set_ylim([0, 100])
+
+        ax[0].legend(loc='upper left')
+        ax[1].legend(loc='upper left')
+        ax2.legend(loc='upper right')
+
+    else:
+        fig, ax = plt.subplots(1,1, figsize=(13,4))
+        ax2 = ax.twinx()
+
+        # Plot the controls and prices
+        controls_plot = control + [control[-1]]
+        ax.step(range(N+1), controls_plot, where='post', color='blue', alpha=0.5, label='Heat pump')
+        costs_plot = costs_pu + [costs_pu[-1]]
+        ax2.step(range(N+1), costs_plot, where='post', color='gray', alpha=0.6, label='Electricity price')
+
+        # Plot hourly loads
+        if parameters['load']['type']=='hourly':
+            loads_plot = parameters['load']['value'] + [parameters['load']['value'][-1]]
+            ax.step(range(N+1), loads_plot, where='post', color='red', alpha=0.4, label='Load')
+
+        # Plot the storage levels
+        if parameters['constraints']['storage_capacity']:
+            ax.plot(range(N+1), get_storage(control, parameters), alpha=0.6, color='orange', label='Storage')
+            ax.plot(range(N+1), [parameters['constraints']['max_storage']]*(N+1), alpha=0.5, linestyle='dotted', color='orange', label='Maximum storage')
+
+        ax.set_xlabel("Time [hours]")
+        ax.set_ylabel("Energy [kWh]")
+        ax2.set_ylabel("Cost [cts/kWh]")
+
+        ax.set_xticks(range(N+1))
+        
+        ax.legend(loc='upper left')
+        ax2.legend(loc='upper right')
 
     plt.show()
 
