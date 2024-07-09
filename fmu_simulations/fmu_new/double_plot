@@ -1,0 +1,52 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+
+storage_capacity = 10.3
+hp_capacity = 10.35
+
+# Yearly data
+df_yearly = pd.read_excel(os.getcwd()+'/data/gridworks_yearly_data.xlsx', header=3, index_col = 0)
+df_yearly.index = pd.to_datetime(df_yearly.index)
+df_yearly.index.name = None
+df_yearly['elec'] = df_yearly['Total Delivered Energy Cost ($/MWh)']
+df_yearly['load'] = df_yearly['House Power Required AvgKw'] * 0.8
+df_yearly['T_OA'] = df_yearly['Outside Temp F']
+df_yearly['T_OA'] = df_yearly['T_OA'].apply(lambda x: round(5/9 * (x-32),2))
+df_yearly = df_yearly[['elec', 'load', 'T_OA']]
+
+# Use CalFlexHub prices
+df_yearly['elec'] = [0.1714, 0.144, 0.1385, 0.1518, 0.1829, 0.2713, 0.4659, 0.5328, 0.28, 0.1158, 
+                     0.0398, 0.0196, 0.011, 0.0188, 0.0255, 0.0632, 0.0957, 0.2358, 0.4931, 0.6618, 
+                     0.5364, 0.4116, 0.2905, 0.2209]*365
+
+c_el_list = df_yearly.elec[:24]
+c_el_list = [x for x in c_el_list for _ in range(60)]
+load_list = [x for x in list(df_yearly.load) for _ in range(60)]
+
+fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
+ax[0].step(range(24*60), Q_HP_list_generic, where='post', color='blue', alpha=0.6, label="Heat pump, generalized")
+ax[0].step(range(24*60), Q_HP_list_baseline, where='post', color='blue', alpha=0.6, label="Heat pump, baseline", linestyle='dashed')
+ax[0].step(range(24*60), load_list, where='post', color='red', alpha=0.6, label="Load")
+ax[1].plot(SOC_list_percent_generic, color='orange', alpha=0.8, label="Storage, generalized")
+ax[1].plot(SOC_list_percent_baseline, color='orange', alpha=0.8, label="Storage, baseline", linestyle='dashed')
+ax2 = ax[0].twinx()
+ax2.step(range(24*60), c_el_list, where='post', color='gray', alpha=0.4, label="Electricity price")
+
+hours = range(0, 24+1, 60)
+hour_labels = range(0, 24+1)
+ax[0].set_xticks(range(0, 24*60+1, 60))
+ax[0].set_xticklabels(hour_labels)
+
+ax[1].set_xlabel("Time [hours]")
+ax[0].set_ylabel("Power [kW]")
+ax[1].set_ylabel("State of charge [%]")
+ax2.set_ylabel("Price [cts/kWh]")
+
+ax[0].set_ylim([0,hp_capacity+10])
+ax[0].set_ylim([-5,105])
+
+ax[0].legend(loc='upper left')
+ax[1].legend(loc='upper left')
+ax2.legend(loc='upper right')
+
+plt.show()

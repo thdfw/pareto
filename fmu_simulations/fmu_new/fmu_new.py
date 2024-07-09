@@ -16,9 +16,9 @@ except ImportError:
 # Parameters
 # --------------------------
 
-storage_capacity = 20   # kWh
-hp_capacity = 12        # kW
-m_HP = 0.29             # kg/s
+storage_capacity = 10.3   # kWh
+hp_capacity = 10.35       # kW
+m_HP = 0.29               # kg/s
 PRINT = False
 
 # --------------------------
@@ -198,7 +198,7 @@ for hour in range(24):
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
     total_cost += cost
 
-    print('*'*30+f'\nHour {hour}, Q_HP {Q_HP[0]}, cost {round(cost,3)}, SoC {round(soc,2)}\n'+'*'*30)
+    print('*'*30+f'\nHour {hour}, Q_HP {round(Q_HP[0],2)}, cost {round(cost,2)}, SoC {round(soc,2)}\n'+'*'*30)
 
 # --------------------------
 # Plot
@@ -237,6 +237,7 @@ ax[1].set_ylabel("State of charge [%]")
 ax2.set_ylabel("Price [cts/kWh]")
 
 ax[0].set_ylim([0,hp_capacity+10])
+ax[1].set_ylim([-5,105])
 
 ax[0].legend(loc='upper left')
 ax[1].legend(loc='upper left')

@@ -15,9 +15,9 @@ except ImportError:
 # Parameters
 # --------------------------
 
-storage_capacity = 20   # kWh
-hp_capacity = 12        # kW
-m_HP = 0.29             # kg/s
+storage_capacity = 10.3   # kWh
+hp_capacity = 10.35       # kW
+m_HP = 0.29               # kg/s
 PRINT = False
 
 # --------------------------
@@ -236,6 +236,7 @@ ax[1].set_ylabel("State of charge [%]")
 ax2.set_ylabel("Price [cts/kWh]")
 
 ax[0].set_ylim([0,hp_capacity+10])
+ax[1].set_ylim([-5,105])
 
 ax[0].legend(loc='upper left')
 ax[1].legend(loc='upper left')
