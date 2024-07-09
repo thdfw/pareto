@@ -543,9 +543,11 @@ def baseline(parameters, hour):
     if hour_24 in peak_hours:
         controls = 0
     elif hour_24 in pre_morning_hours:
-        controls = load[hour_24]+needed_storage_morning/len(pre_morning_hours)
+        neededSoC = needed_storage_morning * hour_24/len(pre_morning_hours)
+        controls = load[hour_24]+needed_storage_morning/len(pre_morning_hours) + (neededSoC-parameters['contraints']['initial_soc'])
     elif hour_24 in pre_evening_hours:
-        controls = load[hour_24]+needed_storage_evening/len(pre_evening_hours)
+        neededSoC = needed_storage_evening * hour_24/len(pre_evening_hours)
+        controls = load[hour_24]+needed_storage_evening/len(pre_evening_hours) + (neededSoC-parameters['contraints']['initial_soc'])
     else:
         controls = load[hour_24]
 

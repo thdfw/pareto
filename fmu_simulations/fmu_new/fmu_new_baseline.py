@@ -172,7 +172,7 @@ for hour in range(24):
     df = simulate(delta_HP, T_sup_HP, hour)
     df = df.drop(df.index[-1])
 
-    df['SOC'] = df['SOC'] * storage_capacity
+    df['SOC'] = df['SOC'] * 20
     df['SOC'] = df['SOC'].round(2)
     df['HeatPumpOnOff'] = df['HeatPumpOnOff'].round()
     df['Q_HP'] = df['HeatPumpOnOff'] * 0.29 * 4187 * (df['T_HP_sup'] - df['T_HP_ret']) / 1000

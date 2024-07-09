@@ -371,7 +371,7 @@ def iteration_plot(operation, parameters):
         ax2.set_ylabel("Price [cts/kWh]")
 
         ax[0].set_ylim([0, max(parameters['control']['max'])+1])
-        ax[1].set_ylim([0, 100])
+        ax[1].set_ylim([-5, 105])
 
         ax[0].legend(loc='upper left')
         ax[1].legend(loc='upper left')

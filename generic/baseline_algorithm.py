@@ -94,6 +94,7 @@ CFH_prices = [0.1714, 0.144, 0.1385, 0.1518, 0.1829, 0.2713, 0.4659, 0.5328, 0.2
 total_cost = 0
 total_heat = 0
 total_elec = 0
+total_no_shift = 0
 num_days = 120
 
 print(f'\n--- Simulating {num_days} days ---\n')
@@ -128,14 +129,25 @@ for day in range(num_days):
     print(f"The cost of this sequence is: {round(cost,2)} $")
 
     # Plot the whole operation
-    iteration_plot({'control': control}, parameters)
+    #iteration_plot({'control': control}, parameters)
 
+    #for i in range(24):
+    #    total_no_shift += parameters['load']['value'][day*24+i] / parameters['hardware']['COP'][day*24+i] * parameters['elec'][day*24+i]
     total_cost += cost
     total_heat += heat
     total_elec += elec
+    #print(f'Total no shift: {total_no_shift}')
 
 print(f'\nThe averages:')
 print(f'- Cost {round(total_cost/num_days,3)} $')
 print(f'- Heat {round(total_heat/num_days,3)} kWh')
 print(f'- Elec {round(total_elec/num_days,3)} kWh')
 print('')
+
+
+no_shifting = 0
+COPs = [COP(T) for T in list(df.T_OA)]
+for hour in range(120*24):
+    no_shifting += list(df.load)[hour] * CFH_prices[hour%24] / COPs[hour]
+print(COPs[:5])
+print(f'No shift: {no_shifting/120}')
