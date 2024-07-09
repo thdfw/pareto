@@ -549,6 +549,6 @@ def baseline(parameters, hour):
     else:
         controls = load[hour_24]
 
-    controls = [controls] + [0]*23
+    controls = [round(controls,2)] + [0]*23
 
     return controls

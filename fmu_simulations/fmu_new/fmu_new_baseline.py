@@ -52,7 +52,7 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 55.8 + 0.25*soc
+    return 55.8 + 0.2*soc
 
 def get_T_sup_HP(Q, soc):
     return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
@@ -197,24 +197,7 @@ for hour in range(24):
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
     total_cost += cost
 
-    print('*'*30+f'\nHour {hour}, Q_HP {Q_HP[0]}, cost {round(cost,3)}, SoC {round(soc,2)}\n'+'*'*30)
-
-# --------------------------
-# Plot
-# --------------------------
-
-print('\n\nHello\n\n')
-
-T_ret_df = pd.DataFrame({'soc':SOC_list,'t_ret':T_ret_list})
-T_ret_df = T_ret_df[60:]
-print(T_ret_df)
-mod = smf.ols(formula='t_ret ~ soc', data=T_ret_df)
-np.random.seed(2) 
-res = mod.fit()
-print('done')
-print(res.params.Intercept)
-print(res.params.soc)
-print('done')
+    print('*'*30+f'\nHour {hour}, Q_HP {round(Q_HP[0],2)}, cost {round(cost,2)}, SoC {round(soc,2)}\n'+'*'*30)
 
 # --------------------------
 # Plot
@@ -227,6 +210,11 @@ SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
 SOC_list_percent = [0 if x<0 else x for x in SOC_list_percent]
 SOC_list_percent = [100 if x>100 else x for x in SOC_list_percent]
+
+print('')
+print(f'Q_HP_list_baseline = {Q_HP_list}')
+print(f'SOC_list_percent_basline = {SOC_list_percent}')
+print('')
 
 fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
 ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="Heat pump")

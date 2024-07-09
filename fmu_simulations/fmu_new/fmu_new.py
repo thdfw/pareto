@@ -204,23 +204,6 @@ for hour in range(24):
 # Plot
 # --------------------------
 
-print('\n\nHello\n\n')
-
-T_ret_df = pd.DataFrame({'soc':SOC_list,'t_ret':T_ret_list})
-T_ret_df = T_ret_df[60:]
-print(T_ret_df)
-mod = smf.ols(formula='t_ret ~ soc', data=T_ret_df)
-np.random.seed(2) 
-res = mod.fit()
-print('done')
-print(res.params.Intercept)
-print(res.params.soc)
-print('done')
-
-# --------------------------
-# Plot
-# --------------------------
-
 c_el_list = df_yearly.elec[:24]
 c_el_list = [x for x in c_el_list for _ in range(60)]
 
@@ -228,6 +211,11 @@ SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
 SOC_list_percent = [0 if x<0 else x for x in SOC_list_percent]
 SOC_list_percent = [100 if x>100 else x for x in SOC_list_percent]
+
+print('')
+print(f'Q_HP_list_generic = {Q_HP_list}')
+print(f'SOC_list_percent_generic = {SOC_list_percent}')
+print('')
 
 fig, ax = plt.subplots(2,1, figsize=(8,5), sharex=True)
 ax[0].step(range(24*60), Q_HP_list, where='post', color='blue', alpha=0.6, label="Heat pump")
