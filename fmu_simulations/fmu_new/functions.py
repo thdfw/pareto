@@ -523,7 +523,6 @@ def baseline(parameters, hour):
 
     # What hour is it?
     hour_24 = hour%24
-    print(f'Hour {hour} is {hour_24}:00')
 
     # Take the load for this day
     hour_0 = hour-hour_24
@@ -546,7 +545,7 @@ def baseline(parameters, hour):
         neededSoC = needed_storage_morning * hour_24/len(pre_morning_hours)
         controls = load[hour_24]+needed_storage_morning/len(pre_morning_hours) + (neededSoC-parameters['constraints']['initial_soc'])
     elif hour_24 in pre_evening_hours:
-        neededSoC = needed_storage_evening * hour_24/len(pre_evening_hours)
+        neededSoC = needed_storage_evening * (hour_24-8)/len(pre_evening_hours)
         controls = load[hour_24]+needed_storage_evening/len(pre_evening_hours) + (neededSoC-parameters['constraints']['initial_soc'])
     else:
         controls = load[hour_24]

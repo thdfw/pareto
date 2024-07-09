@@ -53,7 +53,7 @@ def get_COP(T):
 
 def get_T_HP_in(soc):
     print(f'T_HP_in={56.35 + 0.154*soc}')
-    return 55.8 + 0.25*soc
+    return 55.8 + 0.2*soc
 
 def get_T_sup_HP(Q, soc):
     return round(Q*1000/m_HP/4187 + get_T_HP_in(soc), 2)
@@ -188,11 +188,13 @@ for hour in range(24):
     Q_HP_list.extend(list(df['Q_HP']))
     Q_HP_expected_list.extend(list(df['Q_HP_expected']))
     load_list.extend([df_yearly.load[hour] for _ in range(60)])
-    SOC_list.extend(list(df['SOC']))
+    SOC_list.extend([storage_capacity if x>storage_capacity else x for x in list(df['SOC'])])
     T_ret_list.extend(df.T_HP_ret)
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
+    soc = storage_capacity if soc>storage_capacity else soc
+    soc = 0 if soc<0 else soc
 
     # Cost of the last hour
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]

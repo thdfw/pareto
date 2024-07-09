@@ -192,6 +192,8 @@ for hour in range(24):
 
     # Update SoC
     soc = df['SOC'].iloc[-1]
+    soc = storage_capacity if soc>storage_capacity else soc
+    soc = 0 if soc<0 else soc
 
     # Cost of the last hour
     cost = Q_HP[0] * parameters['elec_costs'][0] / parameters['hardware']['COP'][0]
