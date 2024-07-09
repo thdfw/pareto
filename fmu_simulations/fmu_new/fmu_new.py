@@ -210,7 +210,7 @@ c_el_list = [x for x in c_el_list for _ in range(60)]
 SOC_list = [soc_0] + SOC_list
 SOC_list_percent = [x/storage_capacity*100 for x in SOC_list]
 SOC_list_percent = [0 if x<0 else x for x in SOC_list_percent]
-SOC_list_percent = [100 if x>100 else x for x in SOC_list_percent]
+SOC_list_percent = [100 if x>100 else round(x,2) for x in SOC_list_percent]
 
 print('')
 print(f'Q_HP_list_generic = {Q_HP_list}')
