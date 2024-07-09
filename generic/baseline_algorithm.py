@@ -26,10 +26,10 @@ def baseline(parameters):
 
     if needed_storage_morning > storage_capacity:
         peak_hours.remove(6)
-        needed_storage_morning = round(load[6])
+        needed_storage_morning = round(load[6],3)
     if needed_storage_evening > storage_capacity:
         peak_hours.remove(20)
-        needed_storage_evening = round(load[19])
+        needed_storage_evening = round(load[19],3)
 
     for time in range(len(load)):
 
@@ -123,7 +123,7 @@ for day in range(num_days):
                     'COP': [COP(T) for T in list(df.T_OA[day*24:24+day*24])]}
     }
 
-    # Obtain the control sequence from Pareto
+    # Obtain the control sequence from Baseline
     control, cost, heat, elec = baseline(parameters)
     print(f"The cost of this sequence is: {round(cost,2)} $")
 

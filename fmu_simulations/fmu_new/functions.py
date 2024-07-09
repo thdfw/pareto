@@ -508,3 +508,47 @@ def get_mapping(hour_mode, hour, hours_ranked):
     cost = flow * cost_pu
 
     return flow, cost
+
+
+# -----------------------------------------
+# Baseline algorithm
+# -----------------------------------------
+
+def baseline(parameters, hour):
+
+    # Types of hours
+    peak_hours = [6,7,19,20]
+    pre_morning_hours = [0,1,2,3,4,5]
+    pre_evening_hours = [8,9,10,11,12,13,14,15,16,17,18]
+
+    # What hour is it?
+    hour_24 = hour%24
+    print(f'Hour {hour} is {hour_24}:00')
+
+    # Take the load for this day
+    hour_0 = hour-hour_24
+    load = parameters['load']['value'][hour_0:hour_0+24]
+
+    # Find the necessary storage for the morning and evening loads
+    needed_storage_morning = sum(load[6:8])
+    needed_storage_evening = sum(load[19:21])
+    if needed_storage_morning > parameters['constraints']['max_storage']:
+        peak_hours.remove(6)
+        needed_storage_morning = load[6]
+    if needed_storage_evening > parameters['constraints']['max_storage']:
+        peak_hours.remove(20)
+        needed_storage_evening = load[19]
+
+    # Set the control based on the hour of the day
+    if hour_24 in peak_hours:
+        controls = 0
+    elif hour_24 in pre_morning_hours:
+        controls = load[hour_24]+needed_storage_morning/len(pre_morning_hours)
+    elif hour_24 in pre_evening_hours:
+        controls = load[hour_24]+needed_storage_evening/len(pre_evening_hours)
+    else:
+        controls = load[hour_24]
+
+    controls = [controls] + [0]*23
+
+    return controls
