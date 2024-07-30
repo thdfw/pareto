@@ -259,10 +259,10 @@ def turn_on(hour, operation, hour_mode, hours_ranked, parameters, next_unsatisfi
                         lowest_control = control[hour]
                                                 
                         # Find the minimum power in that range that allows us to reach that cheaper hour
-                        for c in range(int(control_min[hour]*10), int(control_max[hour]*10)+1):
+                        for c in range(int(control_min[hour]*1000), int(control_max[hour]*1000)+1):
                             
                             # Bring back the decimal
-                            c /= 10
+                            c /= 1000
                             
                             # Define the new control sequence to test
                             test_control = control_backup.copy()
